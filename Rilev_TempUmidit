@@ -1,0 +1,69 @@
+#include "DHT.h"
+#include <LiquidCrystal.h>
+
+#define DHTPIN 7 // pin di arduino a cui connetto il sensore
+
+#define DHTTYPE DHT11 //DHT 11 
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); 
+
+
+char ch;
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+Serial.begin(9600); // inizializzo la comunicazione seriale
+//----------------------------------------------------------------------
+//impostiamo il numero di colonne ed il numero di righe di lcd  
+  lcd.begin(16, 2);    
+//----------------------------------------------------------------------
+Serial.println("Test Sensore DHTxx!");
+Serial.println(""); 
+
+dht.begin(); // inizializzo la comunicazione del sensore
+}
+
+void loop() {
+  
+  float h = dht.readHumidity(); // attribuisco alla variabile h l'umidita'
+  float t = dht.readTemperature(); // attribuisco alla variabile t la temperatura
+  
+  //----------------------------------------------------------------------
+  // posiziona il cursore in colonna 0 e linea 0
+    lcd.setCursor(0, 0);   
+    // Visualizzo il messaggio sul display  
+    lcd.print("Umidita':");
+    lcd.print(h);
+    lcd.setCursor(0, 1);
+    lcd.print("Temperatura:");
+    lcd.print(t);
+  //-------------------------------------------------------------------------
+  
+  // controllo l'avvenuta comunicazione, ed avvio la scrittuta dei dati sulla seriale, ed in caso negativo scrivo che è fallita
+  if (isnan(t) || isnan(h)) {
+  Serial.println("Errore lettura sensore DHT FALLITA");
+  }
+  else {
+  Serial.print("Umidita': "); // Scrivo Umidita':
+  Serial.print(h); // scrivo il valore di umidità
+  Serial.print(" %\t"); // scrivo la % e faccio in modo, tramite \t, che il prossimo valore sia scritto più staccato a dx
+  Serial.print("Temperatura: "); // scrivo Temperatura:
+  Serial.print(t); // scivo il valore di temperatura 
+  Serial.println(" *C"); // scrivo l'unita' di misura
+  }
+  
+  Serial.println("");
+  //---------------------------------------------------------------------------------------
+  
+  if(Serial.available() > 0){
+    lcd.clear();
+    lcd.setCursor(0, 0);
+  }
+  while(Serial.available() > 0)
+  {
+    ch = Serial.read();
+    lcd.print(ch);
+  }
+  
+  delay(2000); // ricomincio il ciclo dopo 2 secondi 
+}
